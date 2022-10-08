@@ -14,8 +14,9 @@ build: a.out
 a.out: $(SRC_SOLUTION) $(HDR_SOLUTION) $(SRC_STDLIB) $(HDR_STDLIB)
 	gcc \
 		-std=gnu11 -Wall -Wextra -Werror \
-		-I. -I../stdlib \
-		-D_GNU_SOURCE \
+		-I. -I../stdlib -I/usr/include/fuse3 \
+		-D_GNU_SOURCE -DFUSE_USE_VERSION=31 \
 		-pthread \
 		-g -Og \
-		$(SRC_SOLUTION) $(SRC_STDLIB)
+		$(SRC_SOLUTION) $(SRC_STDLIB) \
+		-lfuse3
