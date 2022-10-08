@@ -70,6 +70,7 @@ char** read_args_vars(const char* path, const char* file_name) {
   char** result = parse(full_path);
   if (result == NULL) {
     result = fs_xmalloc(sizeof(char*));
+    result[0] = NULL;
   }
   return result;
 }
