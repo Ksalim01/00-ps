@@ -1,7 +1,6 @@
 #pragma once
 
 #include <unistd.h>
-#include <errno.h>
 
 /**
    Implement this function to list processes. It must call report_process()
