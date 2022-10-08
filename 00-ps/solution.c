@@ -108,7 +108,7 @@ void ps(void) {
       fs_xfree(exe);
       clear(argv);
       clear(envp);
-      closedir(proc)
+      closedir(proc);
       abort();
     }
     report_process(pid, exe, argv, envp);
