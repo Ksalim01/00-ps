@@ -1,4 +1,3 @@
-#include <solution.h>
 #include <ctype.h>
 #include <dirent.h>
 #include <errno.h>
@@ -6,6 +5,7 @@
 #include <fs_malloc.h>
 #include <fs_string.h>
 #include <limits.h>
+#include <solution.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -39,9 +39,9 @@ char** parse(const char* path) {
   char* buffer = fs_xmalloc(MAX_ARGS);
   ssize_t read_bytes = read(fd, buffer, MAX_ARGS);
   if (read_bytes < 0) {
-//    fs_xfree(buffer);
+    fs_xfree(buffer);
     report_error(path, errno);
-//    return NULL;
+    return NULL;
   }
 
   size_t args_size = 16;
@@ -63,18 +63,15 @@ char** parse(const char* path) {
   return args;
 }
 
-char** cmdline_args(const char* path) {
+char** read_args_vars(const char* path, const char* file_name) {
   char full_path[50];
-  snprintf(full_path, sizeof(full_path), "%s/cmdline", path);
+  snprintf(full_path, sizeof(full_path), file_name, path);
 
-  return parse(full_path);
-}
-
-char** env_vars(const char* path) {
-  char full_path[50];
-  snprintf(full_path, sizeof(full_path), "%s/environ", path);
-
-  return parse(full_path);
+  char** result = parse(full_path);
+  if (result == NULL) {
+    result = fs_xmalloc(sizeof(char*));
+  }
+  return result;
 }
 
 int is_proccess(const char* path) { return atoi(path); }
@@ -101,8 +98,8 @@ void ps(void) {
 
     pid_t pid = atoi(dir->d_name);
     char* exe = executable_file(path);
-    char** argv = cmdline_args(path);
-    char** envp = env_vars(path);
+    char** argv = read_args_vars(path, "%s/cmdline");
+    char** envp = read_args_vars(path, "%s/environ");
 
     report_process(pid, exe, argv, envp);
 
