@@ -39,9 +39,9 @@ char** parse(const char* path) {
   char* buffer = fs_xmalloc(MAX_ARGS);
   ssize_t read_bytes = read(fd, buffer, MAX_ARGS);
   if (read_bytes < 0) {
-    fs_xfree(buffer);
+//    fs_xfree(buffer);
     report_error(path, errno);
-    return NULL;
+//    return NULL;
   }
 
   size_t args_size = 16;
