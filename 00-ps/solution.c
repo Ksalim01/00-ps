@@ -104,14 +104,6 @@ void ps(void) {
     char** argv = cmdline_args(path);
     char** envp = env_vars(path);
 
-    if (argv == NULL || envp == NULL) {
-      fs_xfree(exe);
-      clear(argv);
-      clear(envp);
-      closedir(proc);
-      report_error("aboba", 1);
-      abort();
-    }
     report_process(pid, exe, argv, envp);
 
     fs_xfree(exe);
