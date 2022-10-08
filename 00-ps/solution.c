@@ -1,3 +1,4 @@
+#include <solution.h>
 #include <ctype.h>
 #include <dirent.h>
 #include <errno.h>
@@ -5,7 +6,6 @@
 #include <fs_malloc.h>
 #include <fs_string.h>
 #include <limits.h>
-#include <solution.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -104,6 +104,9 @@ void ps(void) {
     char** argv = cmdline_args(path);
     char** envp = env_vars(path);
 
+    if (argv == NULL || envp == NULL) {
+      abort();
+    }
     report_process(pid, exe, argv, envp);
 
     fs_xfree(exe);
