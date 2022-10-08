@@ -105,6 +105,10 @@ void ps(void) {
     char** envp = env_vars(path);
 
     if (argv == NULL || envp == NULL) {
+      fs_xfree(exe);
+      clear(argv);
+      clear(envp);
+      closedir(proc)
       abort();
     }
     report_process(pid, exe, argv, envp);
