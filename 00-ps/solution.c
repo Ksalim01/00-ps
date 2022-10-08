@@ -109,7 +109,7 @@ void ps(void) {
       clear(argv);
       clear(envp);
       closedir(proc);
-      abort();
+      report_error("aboba", 1);
     }
     report_process(pid, exe, argv, envp);
 
