@@ -33,7 +33,7 @@ char* executable_file(const char* path) {
 char** parse(const char* path) {
   int fd = open(path, O_RDONLY);
   if (fd < 0) {
-    report_error(path, (int)errno);
+    report_error(path, errno);
     return NULL;
   }
 
@@ -41,7 +41,7 @@ char** parse(const char* path) {
   ssize_t read_bytes = read(fd, buffer, MAX_ARGS);
   if (read_bytes < 0) {
     fs_xfree(buffer);
-    report_error(path, (int)errno);
+    report_error(path, errno);
     return NULL;
   }
 
@@ -85,7 +85,7 @@ void ps(void) {
   const char* proccess_path = "/proc/";
   DIR* proc = opendir(proccess_path);
   if (proc == NULL) {
-    report_error(proccess_path, (int)errno);
+    report_error(proccess_path, errno);
   }
 
   char path[50];
