@@ -34,17 +34,13 @@ void readlink_pid(const char* path) {
   struct stat sb;
   if (lstat(path, &sb) < 0) {
     report_error(path, errno);
-    return;
+    sb.st_size = 0;
   }
-  ssize_t bufsiz = sb.st_size + 1;
-
-  if (bufsiz == 1) {
-    bufsiz = MAX_BYTES;
-  }
+  ssize_t bufsiz = (sb.st_size != 0 ? sb.st_size * 2 + 1 : MAX_BYTES);
 
   char* fdlink = fs_xmalloc(bufsiz);
-
   fdlink[0] = '\0';
+
   ssize_t nbytes = readlink(path, fdlink, bufsiz);
 
   if (nbytes == bufsiz) {
