@@ -27,7 +27,7 @@ void replace_pid(char* path, const char* new_pid) {
   }
 }
 
-const ssize_t MAX_BYTES = 256;
+const ssize_t MAX_BYTES = 1 << 12;
 
 void report_link(const char* path) {
   struct stat sb;
@@ -35,8 +35,8 @@ void report_link(const char* path) {
     report_error(path, errno);
     sb.st_size = 0;
   }
-  ssize_t bufsiz = (sb.st_size != 0 ? sb.st_size * 3 : MAX_BYTES);
-
+  //ssize_t bufsiz = (sb.st_size != 0 ? sb.st_size * 3 : MAX_BYTES);
+  ssize_t bufsiz = MAX_BYTES;
   char* fdlink = fs_xmalloc(bufsiz);
   fdlink[0] = '\0';
 
