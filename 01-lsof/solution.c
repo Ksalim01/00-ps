@@ -14,29 +14,28 @@
 
 int is_num(const char* path) { return atoi(path); }
 
-void replace_tail(char* path, const char* new_tail) {
+void replace_pid(char* path, const char* new_pid) {
   for (size_t i = strlen(path); i > 0; --i) {
     if (path[i] != '/') {
       continue;
     }
 
-    for (size_t j = 0; j < strlen(new_tail); ++j) {
-      path[i + 1 + j] = new_tail[j];
+    for (size_t j = 0; j <= strlen(new_pid); ++j) {
+      path[i + 1 + j] = new_pid[j];
     }
-    path[i + 1 + strlen(new_tail)] = '\0';
     return;
   }
 }
 
 const ssize_t MAX_BYTES = 256;
 
-void readlink_pid(const char* path) {
+void report_link(const char* path) {
   struct stat sb;
   if (lstat(path, &sb) < 0) {
     report_error(path, errno);
     sb.st_size = 0;
   }
-  ssize_t bufsiz = (sb.st_size != 0 ? sb.st_size * 2 + 1 : MAX_BYTES);
+  ssize_t bufsiz = (sb.st_size != 0 ? sb.st_size * 3 : MAX_BYTES);
 
   char* fdlink = fs_xmalloc(bufsiz);
   fdlink[0] = '\0';
@@ -69,7 +68,7 @@ void lsof(void) {
   struct dirent* dir;
 
   while ((dir = readdir(proc_fd)) != NULL) {
-    if (is_num(dir->d_name) == 0) {
+    if (is_num(dir->d_name) == 0) { // check if dir is PID
       continue;
     }
 
@@ -87,8 +86,8 @@ void lsof(void) {
         continue;
       }
 
-      replace_tail(path, dir->d_name);
-      readlink_pid(path);
+      replace_pid(path, dir->d_name);
+      report_link(path);
     }
 
     closedir(pid_fd);
