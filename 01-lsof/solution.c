@@ -17,25 +17,42 @@ int is_num(const char* path) { return atoi(path); }
 void replace_tail(char* path, const char* new_tail) {
   for (size_t i = strlen(path); i > 0; --i) {
     if (path[i] != '/') {
-	  continue;
-	}
+      continue;
+    }
 
-	for (size_t j = 0; j <= strlen(new_tail); ++j) {
-	  path[i + 1 + j] = new_tail[j];
-	}
-	return;
+    for (size_t j = 0; j < strlen(new_tail); ++j) {
+      path[i + 1 + j] = new_tail[j];
+    }
+    path[i + 1 + strlen(new_tail)] = '\0';
+    return;
   }
 }
 
+const ssize_t MAX_BYTES = 256;
+
 void readlink_pid(const char* path) {
   struct stat sb;
-  lstat(path, &sb);
+  if (lstat(path, &sb) < 0) {
+    report_error(path, errno);
+    return;
+  }
   ssize_t bufsiz = sb.st_size + 1;
 
-  char* fdlink = fs_xmalloc(bufsiz);
-  fdlink[0] = '\0';
+  if (bufsiz == 1) {
+    bufsiz = MAX_BYTES;
+  }
 
-  if (readlink(path, fdlink, bufsiz) > 0) {
+  char* fdlink = fs_xmalloc(bufsiz);
+
+  fdlink[0] = '\0';
+  ssize_t nbytes = readlink(path, fdlink, bufsiz);
+
+  if (nbytes == bufsiz) {
+    --nbytes;  // truncated
+  }
+
+  if (nbytes >= 0) {
+    fdlink[nbytes] = '\0';  // readlink doesn't put \0 at the end
     report_file(fdlink);
   } else {
     report_error(path, errno);
