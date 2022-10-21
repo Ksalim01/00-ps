@@ -9,14 +9,16 @@ const char *fs_path = "/hello";
 const size_t max_pid_len = 10;
 
 static int hellofs_readdir(const char *path, void *data, fuse_fill_dir_t filler,
-                           off_t off, struct fuse_file_info *ffi) {
+                           off_t off, struct fuse_file_info *ffi,
+                           enum fuse_readdir_flags flags) {
   (void)off;
-  (void)ffi;  // because of errors unused-param
+  (void)ffi;
+  (void)flags;  // because of errors unused-param
   if (strcmp(path, "/") != 0) return -ENOENT;
 
-  filler(data, ".", NULL, 0);
-  filler(data, "..", NULL, 0);
-  filler(data, "hello", NULL, 0);
+  filler(data, ".", NULL, 0, 0);
+  filler(data, "..", NULL, 0, 0);
+  filler(data, "hello", NULL, 0, 0);
   return 0;
 }
 
@@ -71,11 +73,11 @@ static int hellofs_write(const char *path, const char *buf, size_t size,
   return -EROFS;
 }
 
-struct fuse_operations hellofs_ops = {.readdir = hellofs_readdir,
-                                      .read = hellofs_read,
-                                      .open = hellofs_open,
-                                      .getattr = hellofs_getattr,
-                                      .write = hellofs_write};
+struct fuse_operations hellofs_ops = {.readdir = &hellofs_readdir,
+                                      .read = &hellofs_read,
+                                      .open = &hellofs_open,
+                                      .getattr = &hellofs_getattr,
+                                      .write = &hellofs_write};
 
 int helloworld(const char *mntp) {
   char *argv[] = {"exercise", "-f", (char *)mntp, NULL};
