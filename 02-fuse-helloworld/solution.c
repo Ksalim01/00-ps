@@ -1,4 +1,5 @@
 #include <errno.h>
+#include <fcntl.h>
 #include <fuse.h>
 #include <solution.h>
 #include <stdio.h>
@@ -54,10 +55,10 @@ static int hellofs_getattr(const char *path, struct stat *st,
                            struct fuse_file_info *ffi) {
   (void)ffi;
   if (strcmp(path, "/") == 0) {
-    st->st_mode = 0755;
+    st->st_mode = S_IFDIR | S_IRUSR;
     st->st_nlink = 2;
   } else if (strcmp(path, fs_path) == 0) {
-    st->st_mode = 0644;
+    st->st_mode = S_IFREG | S_IRUSR;
     st->st_nlink = 1;
     st->st_size = 512;
   }
