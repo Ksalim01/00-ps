@@ -45,7 +45,7 @@ static int hellofs_read(const char *path, char *buf, size_t size, off_t off,
 static int hellofs_open(const char *path, struct fuse_file_info *ffi) {
   if (strcmp(path, fs_path) != 0) return -ENOENT;
 
-  if ((ffi->flags & O_ACCMODE) != O_RDONLY) return -EACCES;
+  if ((ffi->flags & O_ACCMODE) != O_RDONLY) return -EROFS;
 
   return 0;
 }
