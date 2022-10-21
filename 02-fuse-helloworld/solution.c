@@ -50,7 +50,9 @@ static int hellofs_open(const char *path, struct fuse_file_info *ffi) {
   return 0;
 }
 
-static int hellofs_getattr(const char *path, struct stat *st) {
+static int hellofs_getattr(const char *path, struct stat *st,
+                           struct fuse_file_info *ffi) {
+  (void)ffi;
   if (strcmp(path, "/") == 0) {
     st->st_mode = 0755;
     st->st_nlink = 2;
