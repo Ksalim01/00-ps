@@ -54,13 +54,16 @@ static int hellofs_open(const char *path, struct fuse_file_info *ffi) {
 static int hellofs_getattr(const char *path, struct stat *st,
                            struct fuse_file_info *ffi) {
   (void)ffi;
+  memset(st, 0, sizeof(struct stat));
   if (strcmp(path, "/") == 0) {
     st->st_mode = S_IFDIR | S_IRUSR;
     st->st_nlink = 2;
+	return 0;
   } else if (strcmp(path, fs_path) == 0) {
     st->st_mode = S_IFREG | S_IRUSR;
     st->st_nlink = 1;
     st->st_size = 512;
+	return 0;
   }
 
   return -ENOENT;
