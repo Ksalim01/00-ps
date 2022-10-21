@@ -73,11 +73,53 @@ static int hellofs_write(const char *path, const char *buf, size_t size,
   return -EROFS;
 }
 
-struct fuse_operations hellofs_ops = {.readdir = &hellofs_readdir,
-                                      .read = &hellofs_read,
-                                      .open = &hellofs_open,
-                                      .getattr = &hellofs_getattr,
-                                      .write = &hellofs_write};
+static int hellofs_write_buf(const char *path, struct fuse_bufvec *buf,
+                             off_t off, struct fuse_file_info *ffi) {
+  (void)path;
+  (void)buf;
+  (void)off;
+  (void)ffi;
+  return -EROFS;
+}
+
+static void *hellofs_init(struct fuse_conn_info *fci, struct fuse_config *fc) {
+  (void)fci;
+  (void)fc;
+  return NULL;
+}
+
+static int hellofs_create(const char *path, mode_t mode,
+                          struct fuse_file_info *ffi) {
+  (void)path;
+  (void)mode;
+  (void)ffi;
+  return -EROFS;
+}
+
+static int hellofs_mknod(const char *path, mode_t mode, dev_t fl) {
+  (void)path;
+  (void)mode;
+  (void)fl;
+  return -EROFS;
+}
+
+static int hellofs_mkdir(const char *path, mode_t mode) {
+  (void)path;
+  (void)mode;
+  return -EROFS;
+}
+
+static const struct fuse_operations hellofs_ops = {
+    .init = hellofs_init,
+    .create = hellofs_create,
+    .readdir = hellofs_readdir,
+    .getattr = hellofs_getattr,
+    .open = hellofs_open,
+    .read = hellofs_read,
+    .write = hellofs_write,
+    .write_buf = hellofs_write_buf,
+    .mknod = hellofs_mknod,
+    .mkdir = hellofs_mkdir};
 
 int helloworld(const char *mntp) {
   char *argv[] = {"exercise", "-f", (char *)mntp, NULL};
