@@ -9,6 +9,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+<<<<<<< HEAD
+=======
+#include <unistd.h>
+>>>>>>> master
 
 const size_t MAX_ARGS = 1 << 17;
 
@@ -32,7 +36,11 @@ char* executable_file(const char* path) {
 char** parse(const char* path) {
   int fd = open(path, O_RDONLY);
   if (fd < 0) {
+<<<<<<< HEAD
     report_error(path, errno);
+=======
+    report_error(path, (int)errno);
+>>>>>>> master
     return NULL;
   }
 
@@ -40,7 +48,11 @@ char** parse(const char* path) {
   ssize_t read_bytes = read(fd, buffer, MAX_ARGS);
   if (read_bytes < 0) {
     fs_xfree(buffer);
+<<<<<<< HEAD
     report_error(path, errno);
+=======
+    report_error(path, (int)errno);
+>>>>>>> master
     return NULL;
   }
 
@@ -63,6 +75,7 @@ char** parse(const char* path) {
   return args;
 }
 
+<<<<<<< HEAD
 char** read_args_vars(const char* path, const char* file_name) {
   char full_path[50];
   snprintf(full_path, sizeof(full_path), file_name, path);
@@ -73,6 +86,20 @@ char** read_args_vars(const char* path, const char* file_name) {
     result[0] = NULL;
   }
   return result;
+=======
+char** cmdline_args(const char* path) {
+  char full_path[50];
+  snprintf(full_path, sizeof(full_path), "%s/cmdline", path);
+
+  return parse(full_path);
+}
+
+char** env_vars(const char* path) {
+  char full_path[50];
+  snprintf(full_path, sizeof(full_path), "%s/environ", path);
+
+  return parse(full_path);
+>>>>>>> master
 }
 
 int is_proccess(const char* path) { return atoi(path); }
@@ -82,7 +109,11 @@ void ps(void) {
   const char* proccess_path = "/proc/";
   DIR* proc = opendir(proccess_path);
   if (proc == NULL) {
+<<<<<<< HEAD
     report_error(proccess_path, errno);
+=======
+    report_error(proccess_path, (int)errno);
+>>>>>>> master
   }
 
   char path[50];
@@ -99,8 +130,13 @@ void ps(void) {
 
     pid_t pid = atoi(dir->d_name);
     char* exe = executable_file(path);
+<<<<<<< HEAD
     char** argv = read_args_vars(path, "%s/cmdline");
     char** envp = read_args_vars(path, "%s/environ");
+=======
+    char** argv = cmdline_args(path);
+    char** envp = env_vars(path);
+>>>>>>> master
 
     report_process(pid, exe, argv, envp);
 
