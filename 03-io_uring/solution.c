@@ -7,7 +7,7 @@
 
 typedef char byte;
 
-const size_t BLOCK_SZ = (size_t)1 << 8;
+const size_t BLOCK_SZ = (size_t)1 << 18;
 const size_t QUEUE_READ_SZ = 4;
 const size_t QUEUE_WRITE_SZ = 4;
 size_t current_queue_size = 0;
