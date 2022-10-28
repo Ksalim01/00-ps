@@ -60,6 +60,7 @@ struct io_data* pop_task(struct io_uring* ring) {
   struct io_uring_cqe* cqe;
   io_uring_wait_cqe(ring, &cqe);
   struct io_data* data = io_uring_cqe_get_data(cqe);
+
   data->read_bytes = cqe->res;
 
   io_uring_cqe_seen(ring, cqe);
@@ -74,15 +75,18 @@ int copy(int in, int out) {
   desc.out = out;
 
   push_read_task(&desc, &ring);
-
+  
+  int exit_code = 0;
   for (size_t i = 0; i < QUEUE_READ_SZ + QUEUE_WRITE_SZ; ++i) {
     struct io_data* data = pop_task(&ring);
-    if (data->read_mode) {
+    if (data->read_mode && data->read_bytes > 0) {
       data->read_mode = 0;
       push_task(&desc, &ring, data);
     } else {
+	  exit_code = data->read_bytes;
       free_io_data(data);
     }
   }
-  return 0;
+  
+  return exit_code;
 }
