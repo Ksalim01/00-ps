@@ -9,7 +9,6 @@ const int DIRECT_BLOCKS_NUM = 12;
 size_t unread_bytes = 0;
 size_t block_size = 0;
 
-
 struct iovec* create_iovec(size_t len) {
   struct iovec* iov = malloc(sizeof(struct iovec));
   iov->iov_base = malloc(len);
@@ -50,13 +49,13 @@ int read_inode(int img, int inode_nr, struct ext2_super_block* sb,
 }
 
 void report_entry(struct iovec* buf) {
-	char name[256];
+  char name[256];
   struct ext2_dir_entry_2* dir_entry;
   for (size_t i = 0; i < buf->iov_len; i += dir_entry->rec_len) {
     dir_entry = (struct ext2_dir_entry_2*)(buf->iov_base + i);
     char type = dir_entry->file_type == EXT2_FT_DIR ? 'd' : 'f';
-	memcpy(name, dir_entry->name, dir_entry->name_len);
-	name[dir_entry->name_len] = '\0';
+    memcpy(name, dir_entry->name, dir_entry->name_len);
+    name[dir_entry->name_len] = '\0';
     report_file(dir_entry->inode, type, name);
   }
 }
