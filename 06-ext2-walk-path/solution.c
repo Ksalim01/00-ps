@@ -170,14 +170,15 @@ int traverse_inode(int img, struct ext2_inode* inode, struct common* file) {
 int traverse(struct iovec* super_block, struct iovec* group_descriptor,
              struct iovec* inode, struct common* file, int img) {
   int before_inode = file->inode_nr;
-  if (read_group_descr(img, file->inode_nr, super_block->iov_base,
+  file->inode_nr = -1;
+  if (read_group_descr(img, before_inode, super_block->iov_base,
                        group_descriptor) < 0 ||
-      read_inode(img, file->inode_nr, super_block->iov_base, group_descriptor->iov_base,
-                 inode) < 0 ||
+      read_inode(img, before_inode, super_block->iov_base,
+                 group_descriptor->iov_base, inode) < 0 ||
       traverse_inode(img, inode->iov_base, file) < 0)
     return errno;
 
-  if (file->inode_nr == before_inode && file->traverse_mode == FIND_MODE) {
+  if (file->inode_nr == -1 && file->traverse_mode == FIND_MODE) {
     errno = -ENOTDIR;
     return errno;
   }
@@ -238,10 +239,10 @@ int dump_file(int img, const char* path, int out) {
   file->out = out;
   file->traverse_mode = WRITE_MODE;
 
-    if (traverse(super_block, group_descriptor, inode, file, img) < 0) {
-      clear(super_block, group_descriptor, inode, file);
-      return errno;
-    }
+  if (traverse(super_block, group_descriptor, inode, file, img) < 0) {
+    clear(super_block, group_descriptor, inode, file);
+    return errno;
+  }
 
   clear(super_block, group_descriptor, inode, file);
   return 0;
