@@ -59,7 +59,7 @@ int copy_block(int img, int out, off_t offset, struct iovec* buf) {
 
 int read_direct_blocks(int img, int out, struct ext2_inode* inode) {
   struct iovec* buf = create_iovec(block_size);
-  for (int i = 0; i < DIRECT_BLOCKS_NUM; ++i) {
+  for (int i = 0; i < DIRECT_BLOCKS_NUM && inode->i_block[i] != 0; ++i) {
     if (copy_block(img, out, inode->i_block[i] * block_size, buf) < 0) {
       clear_iovec(buf);
       return errno;
@@ -124,12 +124,12 @@ int write_from_inode(int img, int out, struct ext2_inode* inode) {
   unread_bytes = inode->i_size;
 
   if (read_direct_blocks(img, out, inode) < 0) return errno;
-  if (read_indirect_blocks(img, out,
-                           inode->i_block[DIRECT_BLOCKS_NUM] * block_size))
-    return errno;
-  if (read_double_indirect_blocks(
-          img, out, inode->i_block[DIRECT_BLOCKS_NUM + 1] * block_size))
-    return errno;
+  // if (read_indirect_blocks(img, out,
+  //                          inode->i_block[DIRECT_BLOCKS_NUM] * block_size))
+  //   return errno;
+  // if (read_double_indirect_blocks(
+  //         img, out, inode->i_block[DIRECT_BLOCKS_NUM + 1] * block_size))
+  //   return errno;
 
   return 0;
 }
