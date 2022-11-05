@@ -179,7 +179,7 @@ int traverse(struct iovec* super_block, struct iovec* group_descriptor,
     return errno;
 
   if (file->inode_nr == -1 && file->traverse_mode == FIND_MODE) {
-    errno = -ENOTDIR;
+    errno = -ENOENT;
     return errno;
   }
   return 0;
