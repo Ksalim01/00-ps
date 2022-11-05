@@ -53,7 +53,7 @@ void report_entry(struct iovec* buf) {
   struct ext2_dir_entry_2* dir_entry;
   for (size_t i = 0; i < buf->iov_len; i += dir_entry->rec_len) {
     dir_entry = (struct ext2_dir_entry_2*)(buf->iov_base + i);
-    char type = dir_entry->file_type == EXT2_FT_DIR ? 'd' : 'r';
+    char type = dir_entry->file_type == EXT2_FT_DIR ? 'd' : 'f';
     report_file(dir_entry->inode, type, dir_entry->name);
   }
 }
