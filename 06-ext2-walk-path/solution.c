@@ -222,14 +222,16 @@ int dump_file(int img, const char* path, int out) {
   if (path[0] == '/') ++path;
   char file_name[256];
   size_t name_len = get_root(file_name, path);
-  while (name_len > 0 && file->file_type == EXT2_FT_DIR) {
+  while (name_len > 0) {
+	int is_dir = (strchr(path, '/') != NULL);
     strcpy(file->name, file_name);
     path += name_len;
     if (path[0] == '/') ++path;
 
     if (traverse(super_block, group_descriptor, inode, file, img) < 0) {
       clear(super_block, group_descriptor, inode, file);
-      return errno;
+	  if (is_dir) return -ENOTDIR;
+	  else return -ENOENT;
     }
 
     name_len = get_root(file_name, path);
