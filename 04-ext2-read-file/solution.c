@@ -49,6 +49,8 @@ int read_inode(int img, int inode_nr, struct ext2_super_block* sb,
 }
 
 int copy_block(int img, int out, off_t offset, struct iovec* buf) {
+  size_t should_read = (unread_bytes < block_size) ? unread_bytes : block_size;
+  buf->iov_len = should_read;
   int read_bytes = preadv(img, buf, 1, offset);
   if (read_bytes < 0) return errno;
 
@@ -125,10 +127,10 @@ int write_from_inode(int img, int out, struct ext2_inode* inode) {
 
   if (read_direct_blocks(img, out, inode) < 0) return errno;
   if (read_indirect_blocks(img, out,
-                           inode->i_block[DIRECT_BLOCKS_NUM] * block_size))
+                           inode->i_block[DIRECT_BLOCKS_NUM] * block_size) < 0)
     return errno;
   if (read_double_indirect_blocks(
-          img, out, inode->i_block[DIRECT_BLOCKS_NUM + 1] * block_size))
+          img, out, inode->i_block[DIRECT_BLOCKS_NUM + 1] * block_size) < 0)
     return errno;
 
   return 0;
