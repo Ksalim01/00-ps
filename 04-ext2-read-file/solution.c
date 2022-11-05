@@ -124,12 +124,12 @@ int write_from_inode(int img, int out, struct ext2_inode* inode) {
   unread_bytes = inode->i_size;
 
   if (read_direct_blocks(img, out, inode) < 0) return errno;
-  // if (read_indirect_blocks(img, out,
-  //                          inode->i_block[DIRECT_BLOCKS_NUM] * block_size))
-  //   return errno;
-  // if (read_double_indirect_blocks(
-  //         img, out, inode->i_block[DIRECT_BLOCKS_NUM + 1] * block_size))
-  //   return errno;
+  if (read_indirect_blocks(img, out,
+                           inode->i_block[DIRECT_BLOCKS_NUM] * block_size))
+    return errno;
+  if (read_double_indirect_blocks(
+          img, out, inode->i_block[DIRECT_BLOCKS_NUM + 1] * block_size))
+    return errno;
 
   return 0;
 }
