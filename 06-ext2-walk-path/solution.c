@@ -16,6 +16,7 @@ struct common {
   int traverse_mode;
   int inode_nr;
   char name[256];
+  int file_type;
   int out;
 };
 
@@ -66,8 +67,9 @@ void report_entry(struct iovec* buf, struct common* file) {
     memcpy(name, dir_entry->name, dir_entry->name_len);
     name[dir_entry->name_len] = '\0';
 
-    if (strcmp(name, file->name + 1) == 0) {
-      file->inode_nr = dir_entry->inode;
+    if (strcmp(name, file->name) == 0) {
+      file->inode_nr = dir_entry->inode - 1;
+      file->file_type = dir_entry->file_type;
     }
   }
 }
@@ -165,37 +167,82 @@ int traverse_inode(int img, struct ext2_inode* inode, struct common* file) {
   return 0;
 }
 
-int dump_file(int img, const char* path, int out) {
-  struct iovec* super_block = create_iovec(sizeof(struct ext2_super_block));
-  struct iovec* group_descriptor = create_iovec(sizeof(struct ext2_group_desc));
-  struct iovec* inode = create_iovec(sizeof(struct ext2_inode));
-
-  struct common* file = malloc(sizeof(struct common));
-  strcpy(file->name, path);
-  file->out = out;
-  file->traverse_mode = FIND_MODE;
-  if (read_superblock(img, super_block) < 0 ||
-      read_group_descr(img, 1, super_block->iov_base, group_descriptor) < 0 ||
-      read_inode(img, 1, super_block->iov_base, group_descriptor->iov_base,
+int traverse(struct iovec* super_block, struct iovec* group_descriptor,
+             struct iovec* inode, struct common* file, int img) {
+  int before_inode = file->inode_nr;
+  if (read_group_descr(img, file->inode_nr, super_block->iov_base,
+                       group_descriptor) < 0 ||
+      read_inode(img, file->inode_nr, super_block->iov_base, group_descriptor->iov_base,
                  inode) < 0 ||
-      traverse_inode(img, inode->iov_base, file) < 0) {
-    clear_iovec(inode);
-    clear_iovec(super_block);
-    clear_iovec(group_descriptor);
+      traverse_inode(img, inode->iov_base, file) < 0)
+    return errno;
+
+  if (file->inode_nr == before_inode && file->traverse_mode == FIND_MODE) {
+    errno = -ENOTDIR;
     return errno;
   }
+  return 0;
+}
 
-  file->traverse_mode = WRITE_MODE;
-  if (file->inode_nr > 0 &&
-      (read_group_descr(img, file->inode_nr - 1, super_block->iov_base, group_descriptor) < 0 ||
-       read_inode(img, file->inode_nr - 1, super_block->iov_base, group_descriptor->iov_base,
-                  inode) < 0 ||
-       traverse_inode(img, inode->iov_base, file) < 0))
-    return errno;
+size_t get_root(char* dest, const char* path) {
+  size_t i = 0;
+  for (; path[i] != '\0' && path[i] != '/'; ++i) {
+    dest[i] = path[i];
+  }
+  dest[i] = '\0';
+  // if (path[i] == '\0') return 0;
+  return i;
+}
 
+void clear(struct iovec* super_block, struct iovec* group_descriptor,
+           struct iovec* inode, struct common* file) {
   free(file);
   clear_iovec(inode);
   clear_iovec(super_block);
   clear_iovec(group_descriptor);
+}
+
+int dump_file(int img, const char* path, int out) {
+  struct iovec* super_block = create_iovec(sizeof(struct ext2_super_block));
+  if (read_superblock(img, super_block) < 0) {
+    clear_iovec(super_block);
+    return errno;
+  }
+
+  struct iovec* group_descriptor = create_iovec(sizeof(struct ext2_group_desc));
+  struct iovec* inode = create_iovec(sizeof(struct ext2_inode));
+
+  struct common* file = malloc(sizeof(struct common));
+  file->out = -1;
+  file->traverse_mode = FIND_MODE;
+  file->file_type = EXT2_FT_DIR;
+  file->inode_nr = 1;
+
+  if (path[0] == '/') ++path;
+  char file_name[256];
+  size_t name_len = get_root(file_name, path);
+  while (name_len > 0 && file->file_type == EXT2_FT_DIR) {
+    strcpy(file->name, file_name);
+    path += name_len;
+    if (path[0] == '/') ++path;
+
+    if (traverse(super_block, group_descriptor, inode, file, img) < 0) {
+      clear(super_block, group_descriptor, inode, file);
+      return errno;
+    }
+
+    name_len = get_root(file_name, path);
+  }
+
+  strcpy(file->name, file_name);
+  file->out = out;
+  file->traverse_mode = WRITE_MODE;
+
+    if (traverse(super_block, group_descriptor, inode, file, img) < 0) {
+      clear(super_block, group_descriptor, inode, file);
+      return errno;
+    }
+
+  clear(super_block, group_descriptor, inode, file);
   return 0;
 }
