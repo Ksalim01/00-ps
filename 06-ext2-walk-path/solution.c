@@ -234,6 +234,7 @@ int dump_file(int img, const char* path, int out) {
     }
     
     if (is_dir && file->file_type != EXT2_FT_DIR) {
+      clear(super_block, group_descriptor, inode, file);
       return -ENOTDIR;
     }
     name_len = get_root(file_name, path);
