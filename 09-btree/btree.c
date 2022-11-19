@@ -24,7 +24,8 @@ struct btree {
 };
 
 struct Splitted SplitInHalf(struct BTreeNode* node, SizeType upper_factor);
-struct BTreeNode* BTreeNodeFrom(struct BTreeNode* node, SizeType left, SizeType right, SizeType upper_factor);
+struct BTreeNode* BTreeNodeFrom(struct BTreeNode* node, SizeType left,
+                                SizeType right, SizeType upper_factor);
 void ShiftRight(struct BTreeNode* node, SizeType index);
 void InsertInNode(struct BTreeNode* node, struct Splitted splitted);
 
@@ -40,14 +41,18 @@ void ClearOnlyNode(struct BTreeNode* node) {
 }
 
 struct BTreeNode* NewBTreeNode(SizeType size, SizeType max_size) {
-  struct BTreeNode* new_node = malloc(sizeof(struct BTreeNode));// new BTreeNode();
+  struct BTreeNode* new_node =
+      malloc(sizeof(struct BTreeNode));  // new BTreeNode();
   new_node->parent = NULL;
   // std::cout << "new node\n";
   new_node->size = size;
-  new_node->keys = malloc(sizeof(KeyType) * max_size);//new KeyType[max_size];
-  new_node->children = malloc(sizeof(struct BTreeNode*) * (max_size + 1));//new struct BTreeNode* [max_size + 1] { NULL };
+  new_node->keys = malloc(sizeof(KeyType) * max_size);  // new
+                                                        // KeyType[max_size];
+  new_node->children =
+      malloc(sizeof(struct BTreeNode*) *
+             (max_size + 1));  // new struct BTreeNode* [max_size + 1] { NULL };
   for (SizeType i = 0; i < max_size + 1; ++i) {
-	new_node->children[i] = NULL;
+    new_node->children[i] = NULL;
   }
   return new_node;
 }
@@ -67,14 +72,14 @@ SizeType LowerBound(struct BTreeNode* node, KeyType pivot) {
 }
 
 SizeType FindChild(struct BTreeNode* parent, struct BTreeNode* child) {
-
   SizeType i;
   for (i = 0; i <= parent->size && parent->children[i] != child; ++i) {
   }
   return i;
 }
 
-void SplitIthChild(struct BTreeNode* node, SizeType index, SizeType upper_factor) {
+void SplitIthChild(struct BTreeNode* node, SizeType index,
+                   SizeType upper_factor) {
   if (node->children[index]->size != upper_factor) {
     return;
   }
@@ -121,13 +126,15 @@ void ShiftLeft(struct BTreeNode* node, SizeType index) {
 struct Splitted SplitInHalf(struct BTreeNode* node, SizeType upper_factor) {
   struct Splitted splitted;
   splitted.middle = node->keys[node->size / 2];
-  splitted.right = BTreeNodeFrom(node, node->size / 2 + 1, node->size, upper_factor);
+  splitted.right =
+      BTreeNodeFrom(node, node->size / 2 + 1, node->size, upper_factor);
   splitted.left = BTreeNodeFrom(node, 0, node->size / 2, upper_factor);
   ClearOnlyNode(node);
   return splitted;
 }
 
-struct BTreeNode* BTreeNodeFrom(struct BTreeNode* node, SizeType left, SizeType right, SizeType upper_factor) {
+struct BTreeNode* BTreeNodeFrom(struct BTreeNode* node, SizeType left,
+                                SizeType right, SizeType upper_factor) {
   struct BTreeNode* new_node = NewBTreeNode(right - left, upper_factor);
   for (SizeType i = left; i < right; ++i) {
     new_node->keys[i - left] = node->keys[i];
@@ -157,9 +164,9 @@ void Clear(struct BTreeNode* node) {
   }
 
   node->size = 0;
-  free(node->keys);//delete[] node->keys;
-  free(node->children);//delete[] node->children;
-  free(node);//delete node;
+  free(node->keys);      // delete[] node->keys;
+  free(node->children);  // delete[] node->children;
+  free(node);            // delete node;
 }
 
 KeyType FindMax(struct BTreeNode* root) {
@@ -182,7 +189,8 @@ KeyType FindMin(struct BTreeNode* root) {
   return FindMin(root->children[0]);
 }
 
-struct BTreeNode* MergeTwoNodes(struct BTreeNode* left, struct BTreeNode* right, KeyType middle) {
+struct BTreeNode* MergeTwoNodes(struct BTreeNode* left, struct BTreeNode* right,
+                                KeyType middle) {
   if (left == NULL) {
     ShiftRight(right, 0);
     right->keys[0] = middle;
@@ -210,8 +218,10 @@ struct BTreeNode* MergeTwoNodes(struct BTreeNode* left, struct BTreeNode* right,
   return left;
 }
 
-struct BTreeNode* MergeTwoNeighbours(struct BTreeNode* node, SizeType index, struct btree* t) {
-  struct BTreeNode* merged = MergeTwoNodes(node->children[index - 1], node->children[index], node->keys[index - 1]);
+struct BTreeNode* MergeTwoNeighbours(struct BTreeNode* node, SizeType index,
+                                     struct btree* t) {
+  struct BTreeNode* merged = MergeTwoNodes(
+      node->children[index - 1], node->children[index], node->keys[index - 1]);
   ShiftLeft(node, index - 1);
   if (node->size == 0) {
     t->root = merged;
@@ -224,7 +234,8 @@ struct BTreeNode* MergeTwoNeighbours(struct BTreeNode* node, SizeType index, str
 
 void Merge(struct BTreeNode* node, SizeType index, struct btree* t) {
   struct BTreeNode* middle_node = node->children[index];
-  if (index > 0 && node->children[index - 1] != NULL && node->children[index - 1]->size > t->lower_factor) {
+  if (index > 0 && node->children[index - 1] != NULL &&
+      node->children[index - 1]->size > t->lower_factor) {
     struct BTreeNode* left_child = node->children[index - 1];
     ShiftRight(middle_node, 0);
     middle_node->keys[0] = node->keys[index - 1];
@@ -295,8 +306,7 @@ SizeType CountSize(struct BTreeNode* root) {
 }
 
 void Traverse(struct BTreeNode* node, KeyType** arr) {
-  if (node == NULL)
-    return;
+  if (node == NULL) return;
   for (SizeType i = 0; i < node->size; ++i) {
     Traverse(node->children[i], arr);
     **arr = node->keys[i];
@@ -369,7 +379,8 @@ void Erase(struct BTreeNode* node, KeyType key, struct btree* t) {
 }
 
 struct btree* btree_alloc(unsigned int L) {
-  struct btree* t = malloc(sizeof(struct btree));//new btree();
+  ++L;
+  struct btree* t = malloc(sizeof(struct btree));  // new btree();
   t->root = NULL;
   t->lower_factor = L;
   t->upper_factor = 2 * L + 1;
@@ -381,17 +392,11 @@ void btree_free(struct btree* t) {
   free(t);
 }
 
-void btree_insert(struct btree* t, int x) {
-  Insert(t->root, x, t);
-}
+void btree_insert(struct btree* t, int x) { Insert(t->root, x, t); }
 
-void btree_delete(struct btree* t, int x) {
-  Erase(t->root, x, t);
-}
+void btree_delete(struct btree* t, int x) { Erase(t->root, x, t); }
 
-bool btree_contains(struct btree* t, int x) {
-  return Contains(t->root, x);
-}
+bool btree_contains(struct btree* t, int x) { return Contains(t->root, x); }
 
 struct btree_iter {
   KeyType* elements;
@@ -400,9 +405,11 @@ struct btree_iter {
 };
 
 struct btree_iter* btree_iter_start(struct btree* t) {
-  struct btree_iter* iter = malloc(sizeof(struct btree_iter));//new btree_iter();
+  struct btree_iter* iter =
+      malloc(sizeof(struct btree_iter));  // new btree_iter();
   iter->size = CountSize(t->root);
-  iter->elements = malloc(sizeof(KeyType) * iter->size);//new KeyType[iter->size];
+  iter->elements =
+      malloc(sizeof(KeyType) * iter->size);  // new KeyType[iter->size];
   iter->pos = 0;
 
   KeyType* copy = iter->elements;
@@ -411,8 +418,8 @@ struct btree_iter* btree_iter_start(struct btree* t) {
 }
 
 void btree_iter_end(struct btree_iter* i) {
-  free(i->elements);//delete[] i->elements;
-  free(i);//delete i;
+  free(i->elements);  // delete[] i->elements;
+  free(i);            // delete i;
 }
 
 bool btree_iter_next(struct btree_iter* i, int* x) {
